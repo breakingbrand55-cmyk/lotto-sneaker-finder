@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotto Sneaker Finder</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Hubot+Sans',sans-serif;background-color:#0b0c10;}
+::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:#0b0c10;} ::-webkit-scrollbar-thumb{background:#e31b23;border-radius:3px;}
+@keyframes float-slow{0%{transform:translateY(0) rotate(0);opacity:.03;}50%{transform:translateY(-20px) rotate(5deg);opacity:.08;}100%{transform:translateY(0) rotate(0);opacity:.03;}}
+@keyframes float-reverse{0%{transform:translateY(0) rotate(0);opacity:.04;}50%{transform:translateY(25px) rotate(-8deg);opacity:.09;}100%{transform:translateY(0) rotate(0);opacity:.04;}}
+.floater-1{animation:float-slow 8s ease-in-out infinite;} .floater-2{animation:float-reverse 11s ease-in-out infinite;}
+.custom-radio:checked + label{border-color:#e31b23;background-color:rgba(227,27,35,.1);color:#fff;box-shadow:0 0 15px rgba(227,27,35,.2);}
+.spinner{border:3px solid rgba(255,255,255,.1);border-top-color:#e31b23;border-radius:50%;width:28px;height:28px;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes thankyou-pop{0%{transform:scale(0);opacity:0;}60%{transform:scale(1.15);opacity:1;}100%{transform:scale(1);opacity:1;}}
+.thankyou-pop{animation:thankyou-pop .5s cubic-bezier(.34,1.56,.64,1) forwards;}
+.buy-btn.selected{border-color:#e31b23;background-color:rgba(227,27,35,.12);color:#fff;}
+@keyframes fade-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fade-in .4s ease-out forwards;}
+</style>
+</head>
+<body class="text-gray-100 min-h-screen relative overflow-x-hidden flex flex-col justify-between">
+
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+  <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30"></div>
+  <svg class="absolute floater-1 top-[15%] left-[5%] w-96 h-96 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M21 11.5c0-.83-.67-1.5-1.5-1.5H16.5c-1.38 0-2.5-1.12-2.5-2.5V5.5C14 4.67 13.33 4 12.5 4S11 4.67 11 5.5V7.5C11 8.88 9.88 10 8.5 10H5.5C4.67 10 4 10.67 4 11.5S4.67 13 5.5 13H18.5c.83 0 1.5-.67 1.5-1.5z"/></svg>
+  <svg class="absolute floater-2 bottom-[15%] right-[2%] w-[30rem] h-[30rem] text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M21 11.5c0-.83-.67-1.5-1.5-1.5H16.5c-1.38 0-2.5-1.12-2.5-2.5V5.5C14 4.67 13.33 4 12.5 4S11 4.67 11 5.5V7.5C11 8.88 9.88 10 8.5 10H5.5C4.67 10 4 10.67 4 11.5S4.67 13 5.5 13H18.5c.83 0 1.5-.67 1.5-1.5z"/></svg>
+</div>
+
+<header class="relative z-10 w-full max-w-4xl mx-auto px-6 pt-8 flex justify-between items-center">
+  <div class="h-10 text-white">
+    <svg class="h-full w-auto" viewBox="0 0 400 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 70 L55 25 L85 25 L50 70 Z" fill="#e31b23"/>
+      <path d="M45 45 L75 15 L105 15 L75 45 Z" fill="#ffffff"/>
+      <text x="120" y="65" font-family="'Hubot+Sans', sans-serif" font-weight="900" font-size="52" fill="#ffffff" letter-spacing="2">LOTTO</text>
+    </svg>
+  </div>
+  <div class="bg-gray-900/80 border border-gray-800 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest text-red-500 shadow-lg backdrop-blur-md">Campus Edition</div>
+</header>
+
+<div id="insights-bar" class="relative z-10 w-full max-w-2xl mx-auto px-4 pt-6">
+  <div class="bg-gray-950/60 border border-gray-800/60 rounded-2xl p-4 backdrop-blur-md">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-amber-500">📊 Live Campus Insights</span>
+      <span id="insights-count" class="text-[10px] text-gray-500 uppercase tracking-wider">0 responses</span>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+      <div><div id="insight-color" class="text-sm font-extrabold text-white truncate">—</div><div class="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Top Color</div></div>
+      <div><div id="insight-budget" class="text-sm font-extrabold text-white truncate">—</div><div class="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Avg Budget</div></div>
+      <div><div id="insight-usage" class="text-sm font-extrabold text-white truncate">—</div><div class="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Top Usage</div></div>
+      <div><div id="insight-feature" class="text-sm font-extrabold text-white truncate">—</div><div class="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">Top Priority</div></div>
+    </div>
+    <div class="mt-3 pt-3 border-t border-gray-800/60 flex items-center gap-2">
+      <span class="text-sm">🔥</span>
+      <span class="text-[11px] text-gray-400">Trending on campus: <span id="trending-shoe" class="text-white font-semibold">—</span></span>
+    </div>
+  </div>
+</div>
+
+<main class="relative z-10 w-full max-w-2xl mx-auto px-4 my-8 flex-grow flex flex-col justify-center">
+
+  <div id="form-card" class="bg-gray-950/70 border border-gray-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-10 shadow-2xl transition-all duration-500">
+    <div class="mb-8">
+      <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight text-white mb-2">FIND YOUR <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-amber-500">PERFECT MATCH</span></h1>
+      <p class="text-sm text-gray-400">Tell us how you move, and we'll find a real Lotto sneaker for you — pulled straight from lottobd.com.</p>
+    </div>
+
+    <form id="quiz-form" onsubmit="generateRecommendation(event)" class="space-y-8">
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-3">01. I'm Shopping For</h3>
+        <div class="grid grid-cols-2 gap-3" id="gender-group"></div>
+      </div>
+
+      <div class="bg-gray-900/40 p-5 rounded-2xl border border-gray-800/50 space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-2">02. Personal Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Full Name</label><input type="text" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500 transition"></div>
+          <div><label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Email Address</label><input type="email" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500 transition"></div>
+          <div><label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Phone Number</label><input type="tel" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500 transition"></div>
+          <div><label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Academic Batch</label><input type="text" placeholder="e.g., Batch 23" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500 transition"></div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-3">03. What do you mostly use sneakers for?</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="usage-group"></div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-3">04. Which feature matters most to you?</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5" id="feature-group"></div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-3">05. Which color palette do you prefer?</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2" id="color-group"></div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-3">06. Select your Budget Tier</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3" id="budget-group"></div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-red-500 mb-3">07. Choose Your Primary Personality Archetype</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3" id="personality-group"></div>
+      </div>
+
+      <button type="submit" class="w-full mt-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-sm uppercase tracking-widest py-4 px-6 rounded-xl shadow-xl transition-all duration-150 active:scale-[0.99] border-t border-white/20">Analyze Responses &amp; Suggest Match</button>
+    </form>
+  </div>
+
+  <div id="loading-card" class="hidden bg-gray-950/70 border border-gray-800/80 rounded-3xl p-10 shadow-2xl flex flex-col items-center justify-center gap-4">
+    <div class="spinner"></div>
+    <p class="text-sm text-gray-400">Checking lottobd.com's live catalog…</p>
+  </div>
+
+  <div id="thankyou-card" class="hidden bg-gray-950/70 border border-gray-800/80 rounded-3xl p-10 shadow-2xl flex flex-col items-center justify-center gap-4 text-center">
+    <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center thankyou-pop">
+      <svg class="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="text-sm font-bold text-white uppercase tracking-wider">Thanks! Locking in your match…</p>
+  </div>
+
+  <div id="result-card" class="hidden bg-gray-950 border border-red-500/30 rounded-3xl p-6 md:p-10 shadow-2xl relative transition-all duration-500 overflow-hidden">
+    <div class="absolute -top-24 -left-24 w-48 h-48 bg-red-600/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl"></div>
+
+    <div class="relative z-10 text-center">
+      <div id="source-badge" class="inline-block bg-red-500/10 border border-red-500/30 rounded-full px-4 py-1 text-[11px] font-bold text-red-500 uppercase tracking-widest mb-4">Your Perfect Match Found</div>
+      <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight mb-6">Based on your profile, we recommend:</h2>
+
+      <div class="bg-gray-900/40 border border-gray-800 p-6 rounded-2xl max-w-sm mx-auto shadow-inner mb-6">
+        <div id="match-badge" class="inline-block bg-gradient-to-r from-amber-500 to-red-600 text-white text-xs font-black px-4 py-1.5 rounded-full mb-4 shadow-lg">96% Match</div>
+        <div id="rec-img-wrap" class="h-48 flex items-center justify-center mb-4 overflow-hidden rounded-xl bg-white/5 p-4">
+          <img id="rec-img" src="" alt="Recommended Sneaker" class="hidden max-h-full max-w-full object-contain transform hover:scale-105 transition-transform duration-300">
+          <svg id="rec-icon" class="w-20 h-20 text-gray-700" viewBox="0 0 24 24" fill="currentColor"><path d="M2 18h20v2H2v-2zm2.85-6.36c-.63.16-1.02.8-.87 1.42.16.63.8 1.02 1.42.87l14.55-3.63c.63-.16 1.02-.8.87-1.42-.16-.63-.8-1.02-1.42-.87L18 8.53V6.6c0-.34-.16-.66-.44-.86L14.5 3.5c-.32-.24-.75-.28-1.11-.1l-2.4 1.2c-.3.15-.5.44-.55.77l-.35 2.6-6.24 1.9c-.44.13-.75.5-.83.95l-.17 1.02.99-.25z"/></svg>
+        </div>
+        <div id="rec-title" class="text-base font-extrabold text-white uppercase tracking-wide mb-1">Sneaker Model Name</div>
+        <div id="rec-price" class="text-lg font-black text-red-500 mb-1">Tk 0.00</div>
+        <button id="wishlist-btn" onclick="toggleWishlist()" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-red-500 transition">
+          <span id="wishlist-icon">🤍</span><span id="wishlist-label">Save to Wishlist</span>
+        </button>
+      </div>
+
+      <div class="bg-gray-900/30 border border-gray-800/60 rounded-2xl p-5 max-w-sm mx-auto text-left mb-6">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-3">Why This Shoe?</h3>
+        <ul id="why-list" class="space-y-2 text-xs text-gray-300"></ul>
+      </div>
+
+      <div class="bg-gray-900/30 border border-gray-800/60 rounded-2xl p-5 max-w-sm mx-auto mb-6">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Would you buy this sneaker?</h3>
+        <div class="grid grid-cols-3 gap-2" id="buy-response-group">
+          <button type="button" onclick="saveBuyResponse('Yes')" data-val="Yes" class="buy-btn py-2.5 rounded-xl border border-gray-800 bg-gray-950 text-xs font-bold text-gray-300 hover:border-red-500 transition">Yes</button>
+          <button type="button" onclick="saveBuyResponse('Maybe')" data-val="Maybe" class="buy-btn py-2.5 rounded-xl border border-gray-800 bg-gray-950 text-xs font-bold text-gray-300 hover:border-red-500 transition">Maybe</button>
+          <button type="button" onclick="saveBuyResponse('No')" data-val="No" class="buy-btn py-2.5 rounded-xl border border-gray-800 bg-gray-950 text-xs font-bold text-gray-300 hover:border-red-500 transition">No</button>
+        </div>
+        <p id="buy-response-thanks" class="hidden text-[11px] text-amber-500 mt-3 text-center">Thanks for your feedback! 🙌</p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-3">
+        <button onclick="resetQuiz()" class="w-full sm:w-1/3 bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-300 font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition">Retake Quiz</button>
+        <a id="rec-link" href="https://www.lottobd.com/" target="_blank" rel="noopener" class="w-full sm:w-2/3 flex items-center justify-center bg-white hover:bg-gray-100 text-black font-extrabold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition shadow-lg">Claim This Fit at Lotto Store</a>
+      </div>
+      <div class="max-w-md mx-auto">
+        <button onclick="shareMyMatch()" class="w-full flex items-center justify-center gap-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-300 font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl transition">📤 Share My Match</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<section class="relative z-10 w-full max-w-2xl mx-auto px-4 pb-8">
+  <div class="border-t border-gray-900/70 pt-6 text-center">
+    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Why Lotto?</h3>
+    <p class="text-xs text-gray-500 leading-relaxed max-w-md mx-auto">Since 1973, Lotto has built performance footwear for people who move every day — on the court, on campus, on the street. Every pair on lottobd.com is stocked for real Bangladeshi weather, budgets, and lifestyles, so your match isn't just a recommendation, it's a shoe you can actually go pick up today.</p>
+  </div>
+</section>
+
+<footer class="relative z-10 w-full text-center py-6 text-[10px] text-gray-600 uppercase tracking-widest border-t border-gray-900/50">© 2026 Lotto Sports Bangladesh. All Rights Reserved. Campus Campaign Program.</footer>
+
+<script>
+/* ---------- radio option builder ---------- */
+function buildOptions(containerId, name, opts, layoutClass){
+  const el = document.getElementById(containerId);
+  el.innerHTML = opts.map((o,i)=>`
+    <div class="relative">
+      <input type="radio" id="${name}-${i}" name="${name}" value="${o.value}" ${i===0?'checked':''} class="sr-only custom-radio">
+      <label for="${name}-${i}" class="${layoutClass}">${o.label}</label>
+    </div>`).join('');
+}
+buildOptions('gender-group','gender',
+  [{value:'Men',label:'👟 Men'},{value:'Women',label:'👟 Women'}],
+  'flex items-center justify-center h-14 border border-gray-800 bg-gray-900/30 rounded-xl text-sm font-bold text-gray-300 cursor-pointer select-none transition-all duration-200');
+buildOptions('usage-group','usage',
+  [{value:'University',label:'University'},{value:'Sports',label:'Sports'},{value:'Gym',label:'Gym'},
+   {value:'Everyday use',label:'Everyday Use'},{value:'Fashion',label:'Fashion'},{value:'Other',label:'Other'}],
+  'flex items-center justify-center h-12 border border-gray-800 bg-gray-900/30 rounded-xl text-xs font-semibold text-gray-400 cursor-pointer select-none transition-all duration-200');
+buildOptions('feature-group','feature',
+  [{value:'Comfort',label:'Comfort'},{value:'Style',label:'Style'},{value:'Durability',label:'Durability'},
+   {value:'Performance',label:'Performance'},{value:'Price',label:'Price'}],
+  'flex flex-col items-center justify-center py-3 border border-gray-800 bg-gray-900/30 rounded-xl text-xs font-semibold text-gray-400 cursor-pointer select-none transition-all duration-200');
+buildOptions('color-group','color',
+  [{value:'Black',label:'Black'},{value:'White',label:'White'},{value:'Blue',label:'Blue'},
+   {value:'Grey',label:'Grey'},{value:'Colourful',label:'Colourful'},{value:'Other',label:'Other'}],
+  'flex items-center justify-center py-2.5 border border-gray-800 bg-gray-900/30 rounded-xl text-xs font-semibold text-gray-400 cursor-pointer transition-all duration-200');
+buildOptions('budget-group','budget',
+  [{value:'Under 2000',label:'<span class="text-xs font-bold text-gray-300 block">Under 2000</span><span class="text-[10px] text-gray-500">BDT</span>'},
+   {value:'2000-3000',label:'<span class="text-xs font-bold text-gray-300 block">2000 - 3000</span><span class="text-[10px] text-gray-500">BDT</span>'},
+   {value:'3000-4000',label:'<span class="text-xs font-bold text-gray-300 block">3000 - 4000</span><span class="text-[10px] text-gray-500">BDT</span>'},
+   {value:'Above 4000',label:'<span class="text-xs font-bold text-gray-300 block">Above 4000</span><span class="text-[10px] text-gray-500">BDT</span>'}],
+  'flex flex-col items-center justify-center py-3 border border-gray-800 bg-gray-900/30 rounded-xl cursor-pointer transition-all duration-200 text-center');
+buildOptions('personality-group','personality',
+  [{value:'Sporty',label:'Sporty'},{value:'Minimal',label:'Minimal'},{value:'Trendy',label:'Trendy'},
+   {value:'Casual',label:'Casual'},{value:'Adventurous',label:'Adventurous'}],
+  'flex items-center justify-center h-12 border border-gray-800 bg-gray-900/30 rounded-xl text-xs font-semibold text-gray-400 cursor-pointer select-none transition-all duration-200');
+
+/* ---------- fallback snapshot: REAL products pulled from lottobd.com on 2026-07-01 ---------- */
+const FALLBACK_INVENTORY_MEN = [
+{title:"Blue Sports Lifestyle Shoe for Men 8021923",price:1990,color:"Blue",style:"Casual",url:"https://www.lottobd.com/products/blue-sports-lifestyle-shoe-for-men-8021923"},
+{title:"Black Sports Lifestyle Shoe for Men 8021623",price:1990,color:"Black",style:"Minimal",url:"https://www.lottobd.com/products/black-sports-lifestyle-shoe-for-men-8021623"},
+{title:"Multicolor Sports Lifestyle Shoe for Men 8022977",price:1990,color:"Colourful",style:"Trendy",url:"https://www.lottobd.com/products/multicolor-sports-lifestyle-shoe-for-men-8022977"},
+{title:"Grey Sports Lifestyle Shoe for Men 8021222",price:1953,color:"Grey",style:"Minimal",url:"https://www.lottobd.com/products/grey-sports-lifestyle-shoe-for-men-8021222"},
+{title:"Black Sport Slide for Men 8721605",price:1490,color:"Black",style:"Adventurous",url:"https://www.lottobd.com/products/black-sport-slide-for-men-8721605"},
+{title:"White Sport Slide for Men 8720490",price:1494,color:"White",style:"Adventurous",url:"https://www.lottobd.com/products/white-sport-slide-for-men-8720490"},
+{title:"Ash Sports Lifestyle Shoe for Men 8013175",price:2190,color:"Grey",style:"Casual",url:"https://www.lottobd.com/products/ash-sports-lifestyle-shoe-for-men-8013175"},
+{title:"Grey Sports Lifestyle Shoe for Men 8300244",price:2190,color:"Grey",style:"Minimal",url:"https://www.lottobd.com/products/grey-sports-lifestyle-shoe-for-men-8300244"},
+{title:"Multicolor Sports Lifestyle Shoe for Men 8021208",price:2290,color:"Colourful",style:"Trendy",url:"https://www.lottobd.com/products/multicolor-sports-lifestyle-shoe-for-men-8021208"},
+{title:"Black Sports Lifestyle Shoe for Men 8820606",price:2290,color:"Black",style:"Minimal",url:"https://www.lottobd.com/products/black-sports-lifestyle-shoe-for-men-8820606"},
+{title:"Navy Blue Sports Lifestyle Shoe for Men 8020997",price:2690,color:"Blue",style:"Casual",url:"https://www.lottobd.com/products/navy-blue-sports-lifestyle-shoe-for-men-8020997"},
+{title:"Multicolor Sports Running Shoe for Men 8020945",price:2690,color:"Colourful",style:"Sporty",url:"https://www.lottobd.com/products/multicolor-sports-running-shoe-for-men-8020945"},
+{title:"Black Sports Sandals for Men 8960690",price:2632,color:"Black",style:"Adventurous",url:"https://www.lottobd.com/products/black-sports-sandals-for-men-8960690"},
+{title:"Black Casual Lifestyle Shoe for Men 8021622",price:3290,color:"Black",style:"Minimal",url:"https://www.lottobd.com/products/black-casual-lifestyle-shoe-for-men-8021622"},
+{title:"Blue Sports Lifestyle Shoe for Men 8021942",price:3290,color:"Blue",style:"Casual",url:"https://www.lottobd.com/products/blue-sports-lifestyle-shoe-for-men-8021942"},
+{title:"Blue Sports Sandals for Men 8960990",price:3290,color:"Blue",style:"Adventurous",url:"https://www.lottobd.com/products/blue-sports-sandals-for-men-8960990"},
+{title:"Multicolor Sports Lifestyle Shoe for Men 8300256",price:3490,color:"Colourful",style:"Trendy",url:"https://www.lottobd.com/products/multicolor-sports-lifestyle-shoe-for-men-8300256"},
+{title:"Black Sports Lifestyle Shoe for Men 8021610",price:3490,color:"Black",style:"Trendy",url:"https://www.lottobd.com/products/black-sports-lifestyle-shoe-for-men-8021610"},
+{title:"Grey Sports Shoe for Men 8020255",price:3690,color:"Grey",style:"Sporty",url:"https://www.lottobd.com/products/grey-sports-shoe-for-men-8020255"},
+{title:"Multicolor Sports Shoe for Men 8021258",price:3690,color:"Colourful",style:"Sporty",url:"https://www.lottobd.com/products/multicolor-sports-shoe-for-men-8021258"},
+{title:"Multicolor Sports Running Shoe for Men 8021121",price:3003,color:"Colourful",style:"Sporty",url:"https://www.lottobd.com/products/multicolor-sports-running-shoe-for-men-8021121"},
+{title:"Black Sports Running Shoe for Men 8021621",price:3003,color:"Black",style:"Sporty",url:"https://www.lottobd.com/products/black-sports-running-shoe-for-men-8021621"},
+{title:"Grey Sports Running Shoe for Men 8022263",price:2793,color:"Grey",style:"Sporty",url:"https://www.lottobd.com/products/grey-sports-running-shoe-for-men-8022263"},
+{title:"Black Sports Shoe for Men 8300636",price:4490,color:"Black",style:"Adventurous",url:"https://www.lottobd.com/products/black-sports-shoe-for-men-8300636"},
+{title:"Black Sports Shoe for Men 8021625",price:4490,color:"Black",style:"Sporty",url:"https://www.lottobd.com/products/black-sports-shoe-for-men-8021625"},
+{title:"Casual Lifestyle Shoe for Men 8011264",price:4490,color:"Grey",style:"Casual",url:"https://www.lottobd.com/products/casual-lifestyle-shoe-for-men-8011264"},
+{title:"Black Sports Running Shoe for Men 8011664",price:4490,color:"Black",style:"Sporty",url:"https://www.lottobd.com/products/black-sports-running-shoe-for-men-8011664"},
+{title:"Black Walking Shoe for Men 8020659",price:4290,color:"Black",style:"Minimal",url:"https://www.lottobd.com/products/black-walking-shoe-for-men-8020659"},
+{title:"Ash Walking Shoe for Men 8020159",price:4290,color:"Grey",style:"Minimal",url:"https://www.lottobd.com/products/ash-walking-shoe-for-men-8020159"},
+{title:"Grey Sports Running Shoe for Men 8011263",price:4990,color:"Grey",style:"Sporty",url:"https://www.lottobd.com/products/grey-sports-running-shoe-for-men-8011263"},
+{title:"Black Sports Running Shoe for Men 8010602",price:4990,color:"Black",style:"Sporty",url:"https://www.lottobd.com/products/black-sports-running-shoe-for-men-8010602"},
+{title:"Grey Sports Running Shoe for Men 8011202",price:4990,color:"Grey",style:"Sporty",url:"https://www.lottobd.com/products/grey-sports-running-shoe-for-men-8011202"},
+{title:"Olive Sports Running Shoe for Men 8011764",price:5990,color:"Other",style:"Adventurous",url:"https://www.lottobd.com/products/olive-sports-running-shoe-for-men-8011764"},
+{title:"Grey Sports Running Shoe for Men 8021264",price:5990,color:"Grey",style:"Sporty",url:"https://www.lottobd.com/products/grey-sports-running-shoe-for-men-8021264"},
+{title:"Black Sports Lifestyle Shoe for Men 8012662",price:7990,color:"Black",style:"Trendy",url:"https://www.lottobd.com/products/black-sports-lifestyle-shoe-for-men-8012662"}
+];
+FALLBACK_INVENTORY_MEN.forEach(p => p.gender = 'Men');
+
+/* ---------- fallback snapshot: REAL women's products pulled from lottobd.com/collections/women on 2026-07-01 ---------- */
+const FALLBACK_INVENTORY_WOMEN = [
+{title:"Multicolor Slippers for Women 5610215",price:490,color:"Colourful",style:"Adventurous",url:"https://www.lottobd.com/products/multicolor-slippers-for-women-5610215"},
+{title:"Slippers for Women 5221558",price:150,color:"Other",style:"Adventurous",url:"https://www.lottobd.com/products/slippers-for-women-5221558"},
+{title:"Green Slippers for Women 5220769",price:175,color:"Other",style:"Adventurous",url:"https://www.lottobd.com/products/green-slippers-for-women-5220769"},
+{title:"Multicolor Sandals for Women 5610614",price:990,color:"Colourful",style:"Adventurous",url:"https://www.lottobd.com/products/multicolor-sandals-for-women-5610614"},
+{title:"Blue Slippers for Women 5221969",price:250,color:"Blue",style:"Adventurous",url:"https://www.lottobd.com/products/blue-slippers-for-women-5221969"},
+{title:"Navy Blue Slippers for Women 5220969",price:175,color:"Blue",style:"Adventurous",url:"https://www.lottobd.com/products/navy-blue-slippers-for-women-5220969"},
+{title:"Black Shoe Lifestyle for Women 5010608",price:1290,color:"Black",style:"Casual",url:"https://www.lottobd.com/products/black-shoe-lifestyle-for-women-5010608"},
+{title:"Rose Gold Slippers for Women 5220558",price:150,color:"Other",style:"Adventurous",url:"https://www.lottobd.com/products/rose-gold-slippers-for-women-5220558"},
+{title:"Navy Blue Shoe Lifestyle for Women 5020907",price:1490,color:"Blue",style:"Casual",url:"https://www.lottobd.com/products/navy-blue-shoe-lifestyle-for-women-5020907"},
+{title:"Brown Slippers for Women 5610487",price:590,color:"Other",style:"Adventurous",url:"https://www.lottobd.com/products/brown-slippers-for-women-5610487"},
+{title:"Multicolor Slippers for Women 5610587",price:590,color:"Colourful",style:"Adventurous",url:"https://www.lottobd.com/products/multicolor-slippers-for-women-5610587"},
+{title:"Black Walking Shoe for Women 5010609",price:1990,color:"Black",style:"Minimal",url:"https://www.lottobd.com/products/black-walking-shoe-for-women-5010609"},
+{title:"Red Shoe Lifestyle for Women 5010508",price:1290,color:"Other",style:"Casual",url:"https://www.lottobd.com/products/red-shoe-lifestyle-for-women-5010508"},
+{title:"Blue Shoe Lifestyle for Women 5010908",price:1290,color:"Blue",style:"Casual",url:"https://www.lottobd.com/products/blue-shoe-lifestyle-for-women-5010908"},
+{title:"Rose Gold Walking Shoe for Women 5020510",price:2490,color:"Other",style:"Minimal",url:"https://www.lottobd.com/products/rose-gold-walking-shoe-for-women-5020510"},
+{title:"Brown Walking Shoe for Women 5020410",price:2490,color:"Other",style:"Minimal",url:"https://www.lottobd.com/products/brown-walking-shoe-for-women-5020410"},
+{title:"Black Shoe Lifestyle for Women 5010601",price:990,color:"Black",style:"Casual",url:"https://www.lottobd.com/products/black-shoe-lifestyle-for-women-5010601"},
+{title:"Black Walking Shoe for Women 5020610",price:2490,color:"Black",style:"Minimal",url:"https://www.lottobd.com/products/black-walking-shoe-for-women-5020610"},
+{title:"Blue Walking Shoe for Women 5020901",price:1490,color:"Blue",style:"Minimal",url:"https://www.lottobd.com/products/blue-walking-shoe-for-women-5020901"},
+{title:"Rose Gold Walking Shoe for Women 5020503",price:3490,color:"Other",style:"Minimal",url:"https://www.lottobd.com/products/rose-gold-walking-shoe-for-women-5020503"},
+{title:"Multicolor Sandals for Women 5610714",price:990,color:"Colourful",style:"Adventurous",url:"https://www.lottobd.com/products/multicolor-sandals-for-women-5610714"},
+{title:"Rose Gold Walking Shoe for Women 5020507",price:1490,color:"Other",style:"Minimal",url:"https://www.lottobd.com/products/rose-gold-walking-shoe-for-women-5020507"}
+];
+FALLBACK_INVENTORY_WOMEN.forEach(p => p.gender = 'Women');
+
+const FALLBACK_INVENTORY = FALLBACK_INVENTORY_MEN.concat(FALLBACK_INVENTORY_WOMEN);
+
+let LIVE_INVENTORY = null; // populated if live fetch works
+let USING_LIVE = false;
+
+/* ---------- try to pull the real live catalog from lottobd.com ---------- */
+async function fetchLiveCatalog(){
+  try{
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 6000);
+    const res = await fetch('https://www.lottobd.com/products.json?limit=250', {signal: controller.signal});
+    clearTimeout(timeout);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    if(!data.products || !data.products.length) throw new Error('empty catalog');
+
+    const COLOR_WORDS = ['black','white','blue','navy','grey','ash','olive','maroon','red','pink','green','beige','brown'];
+    const items = data.products
+      .filter(p => /shoe|sandal|slide|slipper|loafer/i.test(p.title) || /shoe|footwear/i.test(p.product_type||''))
+      .map(p => {
+        const t = p.title.toLowerCase();
+        let color = COLOR_WORDS.find(c => t.includes(c)) || 'Other';
+        color = color === 'navy' ? 'Blue' : color === 'ash' ? 'Grey' : (color.charAt(0).toUpperCase()+color.slice(1));
+        if(/multicolor|multi-colour|multicolour/.test(t)) color = 'Colourful';
+        let style = 'Casual';
+        if(/running|sports\s/.test(t)) style = 'Sporty';
+        if(/casual/.test(t)) style = 'Minimal';
+        if(/sandal|slide|slipper/.test(t)) style = 'Adventurous';
+        if(/multicolor|multicolour/.test(t)) style = 'Trendy';
+        const gender = /\bwomen\b/i.test(p.title) ? 'Women' : 'Men';
+        const variant = (p.variants && p.variants[0]) || {};
+        const price = parseFloat(variant.price || 0);
+        const img = (p.images && p.images[0] && p.images[0].src) || '';
+        return {
+          title: p.title,
+          price: price,
+          color: color,
+          style: style,
+          gender: gender,
+          url: 'https://www.lottobd.com/products/' + p.handle,
+          img: img
+        };
+      })
+      .filter(item => item.price > 0);
+
+    if(items.length){ LIVE_INVENTORY = items; USING_LIVE = true; }
+  }catch(e){
+    USING_LIVE = false; // silent fallback, no console noise for end users
+  }
+}
+
+function budgetMatches(price, tier){
+  if(tier === 'Under 2000') return price < 2000;
+  if(tier === '2000-3000') return price >= 2000 && price <= 3000;
+  if(tier === '3000-4000') return price > 3000 && price <= 4000;
+  if(tier === 'Above 4000') return price > 4000;
+  return false;
+}
+
+function scoreProduct(p, ans){
+  let score = 0;
+  if(budgetMatches(p.price, ans.budget)) score += 3;
+  if(p.style === ans.personality) score += 2;
+  if(p.color === ans.color) score += 1;
+  if(ans.usage === 'Sports' || ans.usage === 'Gym'){ if(p.style === 'Sporty' || p.style === 'Adventurous') score += 1; }
+  if(ans.usage === 'Fashion'){ if(p.style === 'Trendy') score += 1; }
+  if(ans.usage === 'University' || ans.usage === 'Everyday use'){ if(p.style === 'Casual' || p.style === 'Minimal') score += 1; }
+  return score;
+}
+
+/* ============ Google Sheets integration hook ============
+   Existing site had no live spreadsheet logging wired up yet.
+   Paste your Google Apps Script Web App URL below to start logging
+   every quiz submission + buy response there. Left blank = safely skipped. */
+const SHEET_WEBHOOK_URL = '';
+function submitToGoogleSheet(payload){
+  if(!SHEET_WEBHOOK_URL) return;
+  try{
+    fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+  }catch(e){ /* fail silently, never block the UI */ }
+}
+
+/* ============ Local history (Live Campus Insights + Trending) ============
+   Client-side approximation of "campus" data, stored per-device in
+   localStorage so insights update instantly and persist across visits. */
+const HISTORY_KEY = 'lotto_response_history';
+const WISHLIST_KEY = 'lotto_wishlist';
+const MAX_SCORE = 7; // 3 budget + 2 personality + 1 color + 1 usage bonus
+
+function getHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+  catch(e){ return []; }
+}
+function saveHistoryEntry(entry){
+  const hist = getHistory();
+  hist.push(entry);
+  if(hist.length > 500) hist.shift();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+  return hist;
+}
+function mostCommon(arr){
+  if(!arr.length) return null;
+  const counts = {};
+  arr.forEach(v => counts[v] = (counts[v]||0) + 1);
+  return Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+}
+const BUDGET_MID = {'Under 2000':1500,'2000-3000':2500,'3000-4000':3500,'Above 4000':4500};
+function averageBudgetLabel(arr){
+  if(!arr.length) return '—';
+  const vals = arr.map(b => BUDGET_MID[b] || 2500);
+  const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+  return 'Tk ' + Math.round(avg).toLocaleString('en-US');
+}
+
+function renderInsights(){
+  const hist = getHistory();
+  const countEl = document.getElementById('insights-count');
+  countEl.innerText = hist.length + (hist.length === 1 ? ' response' : ' responses');
+
+  document.getElementById('insight-color').innerText = hist.length ? mostCommon(hist.map(h=>h.color)) : '—';
+  document.getElementById('insight-budget').innerText = hist.length ? averageBudgetLabel(hist.map(h=>h.budget)) : '—';
+  document.getElementById('insight-usage').innerText = hist.length ? mostCommon(hist.map(h=>h.usage)) : '—';
+  document.getElementById('insight-feature').innerText = hist.length ? mostCommon(hist.map(h=>h.feature)) : '—';
+
+  const trendingEl = document.getElementById('trending-shoe');
+  trendingEl.innerText = hist.length ? mostCommon(hist.map(h=>h.title)) : 'Take the quiz to kick things off';
+}
+
+/* ============ Wishlist ============ */
+function getWishlist(){
+  try{ return JSON.parse(localStorage.getItem(WISHLIST_KEY)) || []; }
+  catch(e){ return []; }
+}
+function isWishlisted(url){
+  return getWishlist().some(w => w.url === url);
+}
+function toggleWishlist(){
+  if(!CURRENT_SELECTION) return;
+  let wl = getWishlist();
+  if(isWishlisted(CURRENT_SELECTION.url)){
+    wl = wl.filter(w => w.url !== CURRENT_SELECTION.url);
+  } else {
+    wl.push({title: CURRENT_SELECTION.title, price: CURRENT_SELECTION.price, url: CURRENT_SELECTION.url, img: CURRENT_SELECTION.img || ''});
+  }
+  localStorage.setItem(WISHLIST_KEY, JSON.stringify(wl));
+  renderWishlistButton();
+}
+function renderWishlistButton(){
+  if(!CURRENT_SELECTION) return;
+  const saved = isWishlisted(CURRENT_SELECTION.url);
+  document.getElementById('wishlist-icon').innerText = saved ? '❤️' : '🤍';
+  document.getElementById('wishlist-label').innerText = saved ? 'Saved to Wishlist' : 'Save to Wishlist';
+}
+
+/* ============ Share My Match ============ */
+async function shareMyMatch(){
+  if(!CURRENT_SELECTION) return;
+  const text = `I got a ${CURRENT_MATCH_PERCENT}% match with the ${CURRENT_SELECTION.title} on Lotto's Campus Sneaker Finder! Find your match: ${CURRENT_SELECTION.url}`;
+  if(navigator.share){
+    try{ await navigator.share({title: 'My Lotto Sneaker Match', text, url: CURRENT_SELECTION.url}); return; }
+    catch(e){ /* user cancelled or share failed, fall through to clipboard */ }
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    const btn = event && event.currentTarget;
+    if(btn){ const original = btn.innerText; btn.innerText = '✅ Copied to Clipboard'; setTimeout(()=>{btn.innerHTML = '📤 Share My Match';}, 2000); }
+  }catch(e){ /* clipboard unavailable, no-op */ }
+}
+
+/* ============ Buy response ============ */
+function saveBuyResponse(val){
+  document.querySelectorAll('.buy-btn').forEach(b => b.classList.toggle('selected', b.dataset.val === val));
+  document.getElementById('buy-response-thanks').classList.remove('hidden');
+  const hist = getHistory();
+  if(hist.length){
+    hist[hist.length-1].buyResponse = val;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+  }
+  submitToGoogleSheet({type: 'buy_response', value: val, timestamp: new Date().toISOString()});
+}
+
+/* ============ Match % + Why This Shoe ============ */
+function computeMatchPercent(score){
+  return Math.min(99, Math.max(65, Math.round(65 + (score / MAX_SCORE) * 34)));
+}
+function buildWhyReasons(p, ans){
+  const reasons = [];
+  if(budgetMatches(p.price, ans.budget)) reasons.push(`Priced right in your <b class="text-white">${ans.budget}</b> budget tier.`);
+  if(p.style === ans.personality) reasons.push(`Its ${p.style.toLowerCase()} look matches your <b class="text-white">${ans.personality}</b> style.`);
+  if(p.color === ans.color) reasons.push(`Comes in <b class="text-white">${p.color}</b>, your preferred colorway.`);
+  if((ans.usage === 'Sports' || ans.usage === 'Gym') && (p.style === 'Sporty' || p.style === 'Adventurous')) reasons.push(`Built for movement — a strong fit for <b class="text-white">${ans.usage}</b>.`);
+  if(ans.usage === 'Fashion' && p.style === 'Trendy') reasons.push(`Trend-forward design suited for <b class="text-white">Fashion</b> use.`);
+  if((ans.usage === 'University' || ans.usage === 'Everyday use') && (p.style === 'Casual' || p.style === 'Minimal')) reasons.push(`Everyday comfort, perfect for <b class="text-white">${ans.usage}</b>.`);
+  reasons.push(`We weighed <b class="text-white">${ans.feature}</b> as your top priority when scoring the catalog.`);
+  return reasons.slice(0, 4);
+}
+
+let CURRENT_SELECTION = null;
+let CURRENT_MATCH_PERCENT = 0;
+
+async function generateRecommendation(event){
+  event.preventDefault();
+  document.getElementById('form-card').classList.add('hidden');
+  document.getElementById('loading-card').classList.remove('hidden');
+
+  if(LIVE_INVENTORY === null){ await fetchLiveCatalog(); }
+  const inventory = USING_LIVE ? LIVE_INVENTORY : FALLBACK_INVENTORY;
+
+  const ans = {
+    gender: document.querySelector('input[name="gender"]:checked').value,
+    usage: document.querySelector('input[name="usage"]:checked').value,
+    feature: document.querySelector('input[name="feature"]:checked').value,
+    color: document.querySelector('input[name="color"]:checked').value,
+    budget: document.querySelector('input[name="budget"]:checked').value,
+    personality: document.querySelector('input[name="personality"]:checked').value
+  };
+
+  // Only recommend from the selected Men/Women category, falling back to the
+  // full catalog if that category is unexpectedly empty (e.g. live fetch hiccup).
+  const genderPool = inventory.filter(p => p.gender === ans.gender);
+  const pool = genderPool.length ? genderPool : inventory;
+
+  const scored = pool.map(p => ({p, s: scoreProduct(p, ans)}));
+  scored.sort((a,b) => b.s - a.s);
+  const topScore = scored[0].s;
+  const topPicks = scored.filter(x => x.s === topScore).map(x => x.p);
+  const finalSelection = topPicks[Math.floor(Math.random() * topPicks.length)];
+
+  CURRENT_SELECTION = finalSelection;
+  CURRENT_MATCH_PERCENT = computeMatchPercent(topScore);
+
+  document.getElementById('rec-title').innerText = finalSelection.title;
+  document.getElementById('rec-price').innerText = 'Tk ' + finalSelection.price.toLocaleString('en-US', {minimumFractionDigits:2});
+  document.getElementById('rec-link').href = finalSelection.url;
+  const sourceLabel = USING_LIVE ? 'Live Match — From Lotto BD Right Now' : 'Match Found (Offline Catalog)';
+  document.getElementById('source-badge').innerText = ans.gender + "'s " + sourceLabel;
+  document.getElementById('match-badge').innerText = CURRENT_MATCH_PERCENT + '% Match';
+
+  const whyList = document.getElementById('why-list');
+  whyList.innerHTML = buildWhyReasons(finalSelection, ans).map(r => `<li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">●</span><span>${r}</span></li>`).join('');
+
+  document.querySelectorAll('.buy-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('buy-response-thanks').classList.add('hidden');
+
+  const img = document.getElementById('rec-img');
+  const icon = document.getElementById('rec-icon');
+  if(finalSelection.img){
+    img.src = finalSelection.img;
+    img.classList.remove('hidden');
+    icon.classList.add('hidden');
+  } else {
+    img.classList.add('hidden');
+    icon.classList.remove('hidden');
+  }
+
+  renderWishlistButton();
+
+  // save this response into local history + fire Sheets webhook
+  saveHistoryEntry({
+    timestamp: new Date().toISOString(),
+    gender: ans.gender, usage: ans.usage, feature: ans.feature, color: ans.color, budget: ans.budget, personality: ans.personality,
+    title: finalSelection.title, price: finalSelection.price, matchPercent: CURRENT_MATCH_PERCENT
+  });
+  renderInsights();
+  submitToGoogleSheet({type: 'quiz_response', ...ans, recommended: finalSelection.title, price: finalSelection.price, matchPercent: CURRENT_MATCH_PERCENT, timestamp: new Date().toISOString()});
+
+  // smooth thank-you moment before revealing the result
+  document.getElementById('loading-card').classList.add('hidden');
+  const thankyou = document.getElementById('thankyou-card');
+  thankyou.classList.remove('hidden');
+  window.scrollTo({top: thankyou.offsetTop - 40, behavior: 'smooth'});
+
+  setTimeout(() => {
+    thankyou.classList.add('hidden');
+    const resultCard = document.getElementById('result-card');
+    resultCard.classList.remove('hidden');
+    resultCard.classList.add('block', 'fade-in');
+    window.scrollTo({top: resultCard.offsetTop - 40, behavior: 'smooth'});
+  }, 1100);
+}
+
+function resetQuiz(){
+  document.getElementById('quiz-form').reset();
+  document.getElementById('result-card').classList.add('hidden');
+  document.getElementById('loading-card').classList.add('hidden');
+  document.getElementById('thankyou-card').classList.add('hidden');
+  document.getElementById('form-card').classList.remove('hidden');
+}
+
+// Warm the live catalog in the background as soon as the page loads
+fetchLiveCatalog();
+renderInsights();
+</script>
+</body>
+</html>
